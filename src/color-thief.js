@@ -25,15 +25,19 @@
   with a set of helper functions.
 */
 var CanvasImage = function (image) {
-    this.canvas  = document.createElement('canvas');
-    this.context = this.canvas.getContext('2d');
-
-    document.body.appendChild(this.canvas);
-
-    this.width  = this.canvas.width  = image.width;
-    this.height = this.canvas.height = image.height;
-
-    this.context.drawImage(image, 0, 0, this.width, this.height);
+    // if image is canvas, reuse it
+    if(image && image.constructor && image.constructor.name === 'HTMLCanvasElement') {
+        this.canvas = image;
+        this.context = this.canvas.getContext('2d');
+    } else {
+        this.canvas  = document.createElement('canvas');
+        this.context = this.canvas.getContext('2d');
+        this.canvas.width  = image.width;
+        this.canvas.height = image.height;
+        this.context.drawImage(image, 0, 0, image.width, image.height);
+    }
+    this.width  = this.canvas.width;
+    this.height = this.canvas.height;
 };
 
 CanvasImage.prototype.clear = function () {
@@ -74,7 +78,7 @@ var ColorThief = function () {};
  * */
 ColorThief.prototype.getColor = function(sourceImage, quality) {
     var palette       = this.getPalette(sourceImage, 5, quality);
-    var dominantColor = palette[0];
+    var dominantColor = palette && palette[0];
     return dominantColor;
 };
 
@@ -133,7 +137,7 @@ ColorThief.prototype.getPalette = function(sourceImage, colorCount, quality) {
     var palette = cmap? cmap.palette() : null;
 
     // Clean up
-    image.removeCanvas();
+    // image.removeCanvas();
 
     return palette;
 };
